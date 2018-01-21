@@ -1,0 +1,98 @@
+<!--
+Copyright 2018 Rupinder Singh
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Captcha Client</title>
+  </head>
+  <body>
+    <div id="captcha-client" style="border: 1px solid black;">
+        <table style="width: 100%;">
+            <tr>
+                <td colspan="3">
+                    <canvas id="captcha-canvas">Your browser does not support the HTML5 canvas tag.</canvas>
+                </td>
+            </tr>
+            <tr>
+                <td><input style="width: 90%;" id="captcha-response" type="text"></input></td>
+                <td><button id="capthca-submit" onclick="captchaCheck();">Submit</button></td>
+                <td><button id="capthca-reload" onclick="loadCaptcha();">&#x21bb;</button></td>
+            </tr>
+        </table>
+        <script type="text/javascript">
+
+            var checkCaptchaApiUrl = '/checkcaptcha'; // change this to your api url
+            var getCaptchaApiUrl = 'getcaptchaimage'; // change this to your api url
+
+            function captchaCheck(){
+                var xhr = new XMLHttpRequest();
+                var answer = document.getElementById('captcha-response').value;
+                xhr.onreadystatechange = function () {
+                    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+                        handleCaptchaResponse(JSON.parse(xhr.responseText));
+                    }
+                };
+                xhr.open('POST', checkCaptchaApiUrl, true);
+                xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+                xhr.send(JSON.stringify({ answer: answer }));
+            }
+
+            function loadCaptcha(){
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+                        processCaptchaData(JSON.parse(xhr.responseText));
+                    }
+                };
+                xhr.open('GET', getCaptchaApiUrl, true);
+                xhr.send();
+            }
+
+            function processCaptchaData(res){
+                var capCanvas=document.getElementById('captcha-canvas');
+                var capCanvasContext=capCanvas.getContext('2d');
+                var imgData = capCanvasContext.createImageData(res.width,res.height);
+
+                capCanvasContext.canvas.height = res.height;
+                capCanvasContext.canvas.width = res.width;
+                document.getElementById('captcha-client').style.width = res.width + 10 + 'px';
+                if(res.width < 120){
+                    document.getElementById('capthca-submit').innerHTML = '&#10004';
+                }
+                for (var i = imgData.data.length - 1; i >= 0; i--) {
+                    if(res.imgData[i]){
+                        imgData.data[i] = res.imgData[i];
+                    }
+                    else{
+                        imgData.data[i] = 0;
+                    }
+                }
+                capCanvasContext.putImageData(imgData, 0, 0);
+            }
+
+            function handleCaptchaResponse(res){
+                console.log(res);
+                // do something with response
+            }
+
+            loadCaptcha();
+        </script>
+    </div>
+  </body>
+</html>
