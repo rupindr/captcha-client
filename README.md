@@ -20,8 +20,10 @@ Add following tag to your html
 
     var captcha = new CaptchaClient(document.getElementById('captcha-container'), 'https://localhost:3001');
     
-when object is created, div #captcha-container will be popoulated with a captcha.
+when object is created, div #captcha-container will be popoulated with a captcha.  
+
 **3.Adding event listeners.**  
+
 captcha-client provides following events:
 	
 
